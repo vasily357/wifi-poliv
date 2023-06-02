@@ -1,0 +1,59 @@
+<!DOCTYPE HTML>
+<html>
+	<a title='Press click to update page.' href='/\'></a>
+		<h2 style='color: #003366;'>
+			WiFi Drinks Controller. 
+		</h2>
+	</a>
+	<h2>{{CTime}}</h2>
+	<table style="border-collapse: collapse; width: 95%" "height: 36px; border=1">
+		<tbody>
+			<tr style="height: 18px">
+				<td>Sensor</td>
+				<td> 1</td>
+				<td> 2</td>
+			</tr>
+			<tr style="height: 18px">
+				<td>
+					<form method='POST' action='/sens'>
+						<input title='Click and wait to sensor read.' type='submit' value='Sensor Read'>
+					</form>
+				</td>
+				<td>
+					{{S1}}
+				</td>
+				<td>
+					{{S2}}
+				</td>
+			</tr>
+			<tr style="height: 18px">
+				<td>Auto threshold</td>
+				<td>{{Low1}}</td>
+				<td>{{Low2}}</td>
+			</tr>
+			<tr style="height: 18px">
+				<td>Relay</td>
+				<td>
+					<form method='POST' action='/In1ManualStart'><input title='{{In1ManualTime}} sec. Manual start if only no hi threshold.'></form>
+				</td>
+				<td>
+					<form method='POST' action='/In2ManualStart'><input title='{{In2ManualTime}} sec. Manual start if only no hi threshold.'></form>
+				</td>
+			</tr>
+			<tr style="height: 18px">
+				<td>Counter</td>
+				<td>{{In1Stat}}</td>
+				<td>{{In2Stat}}</td>
+			</tr>
+			<tr style="height: 60px">
+				<td>
+					<form method='POST' action='/info'><input type='submit' value='Information'></form>
+				</td>
+				<td>
+					<form method='POST' action='/SetUp'><input title='Press click to setup page.' type='submit' value='SetUp'></form>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</html>
+	
