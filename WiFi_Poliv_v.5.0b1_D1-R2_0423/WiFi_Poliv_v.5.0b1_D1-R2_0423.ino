@@ -7,8 +7,7 @@
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WebServer.h>
 #include <EEPROM.h>
-#include <ESPTemplateProcessor.h>
- 
+
 //Variables
 int i = 0;
 int statusCode;
@@ -72,28 +71,28 @@ int In2Stat = 0; //Статистика включений In2 с момента
 int In2Invert = 0;
  
 void setup() {
-  SPIFFS.begin();
   Serial.begin(115200); //Initialising if(DEBUG)Serial Monitor
+  SPIFFS.begin();
   Serial.println();
   Serial.println("Disconnecting previously connected WiFi");
   WiFi.disconnect();
   EEPROM.begin(512); //Initialasing EEPROM
   delay(5);
   //pinMode(LED_BUILTIN, OUTPUT);
-pinMode(In1, OUTPUT);
-pinMode(In2, OUTPUT);
-pinMode(SensorPower1, OUTPUT);
-pinMode(SensorPower2, OUTPUT);
-digitalWrite(In1, HIGH);
-digitalWrite(In2, HIGH);
-digitalWrite(SensorPower1, LOW);
-digitalWrite(SensorPower2, LOW);
-//digitalWrite(LED_BUILTIN, HIGH);
+  pinMode(In1, OUTPUT);
+  pinMode(In2, OUTPUT);
+  pinMode(SensorPower1, OUTPUT);
+  pinMode(SensorPower2, OUTPUT);
+  digitalWrite(In1, HIGH);
+  digitalWrite(In2, HIGH);
+  digitalWrite(SensorPower1, LOW);
+  digitalWrite(SensorPower2, LOW);
+  //digitalWrite(LED_BUILTIN, HIGH);
   Serial.println();
   Serial.println();
   Serial.println("Startup");
 
- if (analogRead (Sensor0) <= 24) {PassOK = 2; PassTimer = 1000 * 60 * 3; for (int i = 0; i < 33; ++i) {digitalWrite(LED_BUILTIN, LOW); delay(15); digitalWrite(LED_BUILTIN, HIGH); delay(200);} ;}; // Password reset
+  if (analogRead (Sensor0) <= 24) {PassOK = 2; PassTimer = 1000 * 60 * 3; for (int i = 0; i < 33; ++i) {digitalWrite(LED_BUILTIN, LOW); delay(15); digitalWrite(LED_BUILTIN, HIGH); delay(200);} ;}; // Password reset
  
   //---------------------------------------- Read EEPROM for SSID and pass
   DataReadEEPROM();
@@ -101,8 +100,7 @@ digitalWrite(SensorPower2, LOW);
   Serial.println(LED_BUILTIN);
  
   String esid;
-  for (int i = 0; i < 32; ++i)
-  {
+  for (int i = 0; i < 32; ++i) {
     esid += char(EEPROM.read(i));
   }
   Serial.println();
@@ -111,8 +109,7 @@ digitalWrite(SensorPower2, LOW);
   Serial.println("Reading EEPROM pass");
  
   String epass = "";
-  for (int i = 32; i < 96; ++i)
-  {
+  for (int i = 32; i < 96; ++i) {
     epass += char(EEPROM.read(i));
   }
   Serial.print("PASS: ");
@@ -120,15 +117,12 @@ digitalWrite(SensorPower2, LOW);
  
  
   WiFi.begin(esid.c_str(), epass.c_str());
-  if (testWifi())
-  {
+  if (testWifi()) {
     Serial.println();
     Serial.println("Succesfully Connected!!!");
     launchWWW();
     return;
-  }
-  else
-  {
+  } else {
     Serial.println("Turning the HotSpot On");
     launchWeb();
     setupAP();// Setup HotSpot
@@ -137,14 +131,12 @@ digitalWrite(SensorPower2, LOW);
   Serial.println();
   Serial.println("Waiting.");
   
-  while ((WiFi.status() != WL_CONNECTED))
-  {
+  while ((WiFi.status() != WL_CONNECTED)) {
     Serial.print(".");
     delay(100);
     loop2();
     server.handleClient();
   }
- 
 }
 void loop() {
 loop2();
@@ -153,23 +145,39 @@ server.handleClient();
 
 } //end loop
 
-void loop2()
-{
-if (millis() <= 2000) { PassTimer = 1000 * 60 * 3; SensorTimer = 7000; DisconectTimer = 1000*60*3; In1Timer = 14; In2Timer = 14;}; //На всякий случай обнуляшка таймеров, после обнуления таймера.
-//digitalWrite(LED_BUILTIN, HIGH);
-if (N == 1 && millis() >= DisconectTimer) {N = 0; Serial.print(" Connect SSID"); setup(); };
-if (millis() >= PassTimer && (PassOK == 1 || PassOK == 2 || PassOK == 3)) { PassOK = 0; }; 
-Sensor();
-RelayIn1();
-RelayIn2();
+void loop2() {
+  if (millis() <= 2000) {
+    PassTimer = 1000 * 60 * 3;
+    SensorTimer = 7000;
+    DisconectTimer = 1000*60*3;
+    In1Timer = 14;
+    In2Timer = 14;
+  }; //На всякий случай обнуляшка таймеров, после обнуления таймера.
+  //digitalWrite(LED_BUILTIN, HIGH);
+  if (N == 1 && millis() >= DisconectTimer) {
+    N = 0; Serial.print(" Connect SSID"); setup();
+  };
+  if (millis() >= PassTimer && (PassOK == 1 || PassOK == 2 || PassOK == 3)) {
+    PassOK = 0;
+  }; 
+  Sensor();
+  RelayIn1();
+  RelayIn2();
 } //end loop2
 
 //Sensor read code
-void Sensor ()
-{
-if (millis() >= SensorTimer && digitalRead(SensorPower1) == LOW && digitalRead(SensorPower2) == LOW) {digitalWrite(SensorPower1, HIGH); SensorTimer = millis() + 1500;};
-if (millis() >= SensorTimer && digitalRead(SensorPower1) == HIGH) { Serial.print("Sensor 1 Read: "); S1 = analogRead (Sensor0); delay(15); S1 = S1 + analogRead (Sensor0); delay(60); S1 = S1 + analogRead (Sensor0); S1 = S1 / 3 ; digitalWrite(SensorPower1, LOW); Serial.println(S1); digitalWrite(SensorPower2, HIGH); SensorTimer = millis() + 1500;};
-if (millis() >= SensorTimer && digitalRead(SensorPower2) == HIGH) { Serial.print("Sensor 2 Read: "); S2 = analogRead (Sensor0); delay(15); S2 = S2 + analogRead (Sensor0); delay(60); S2 = S2 + analogRead (Sensor0); S2 = S2 / 3 ; digitalWrite(SensorPower2, LOW); Serial.println(S2); SensorTimer = millis() + 1000 * 60 * SensorLongTime;};
+void Sensor () {
+  if (millis() >= SensorTimer && digitalRead(SensorPower1) == LOW && digitalRead(SensorPower2) == LOW) {
+    digitalWrite(SensorPower1, HIGH); SensorTimer = millis() + 1500;
+  };
+  if (millis() >= SensorTimer && digitalRead(SensorPower1) == HIGH) {
+    Serial.print("Sensor 1 Read: "); S1 = analogRead (Sensor0);
+    delay(15);
+    S1 = S1 + analogRead (Sensor0);
+    delay(60);
+    S1 = S1 + analogRead (Sensor0);
+    S1 = S1 / 3 ; digitalWrite(SensorPower1, LOW); Serial.println(S1); digitalWrite(SensorPower2, HIGH); SensorTimer = millis() + 1500;};
+  if (millis() >= SensorTimer && digitalRead(SensorPower2) == HIGH) { Serial.print("Sensor 2 Read: "); S2 = analogRead (Sensor0); delay(15); S2 = S2 + analogRead (Sensor0); delay(60); S2 = S2 + analogRead (Sensor0); S2 = S2 / 3 ; digitalWrite(SensorPower2, LOW); Serial.println(S2); SensorTimer = millis() + 1000 * 60 * SensorLongTime;};
 }
 
 //In1 Play
@@ -387,17 +395,20 @@ void setting ()
       server.send(statusCode, "application/json", content); 
 }
 
-void launchWWW()
-{
+void launchWWW() {
   server.begin();//Запускаем сервер
   Serial.println("Server listening");
   Serial.print("WiFi.status:");
   Serial.println(WiFi.status());
-      Serial.print("Local IP: ");
+  Serial.print("Local IP: ");
   Serial.println(WiFi.localIP());
   Serial.print("SoftAP IP: ");
   Serial.println(WiFi.softAPIP());
-  server.on("/", RootPath);//Свяжем функцию обработчика с путем
+
+  server.on("/", App);
+  server.on("/api/data", ApiData);
+  
+
   server.on("/sens", Sens);
   server.on("/info", Info);
   server.on("/PassReadEEPROM", PassReadEEPROM);
@@ -430,6 +441,52 @@ void launchWWW()
   server.on("/setting", setting);
 }
 
+void App () {
+  String response = "<!DOCTYPE HTML>";
+  response += "<html>";
+  response += "<head>";
+  response += "<script>";
+  response += "async function logJSONData() {";
+  response += "const response = await fetch('/api/data');";
+  response += "const jsonData = await response.json();";
+  response += "console.log(jsonData);";
+  response += "}";
+  response += "setInterval(logJSONData, 1000)";
+  response += "</script>";
+  response += "</head>";
+  response += "<body></body>";
+  response += "</html>";
+  server.send(200, "text/html", response);
+}
+
+void ApiData () {
+  String response = "{";
+
+  response+= "\"S1\": \""+String(S1)+"\"";
+  response+= ",\"S2\": \""+String(S2)+"\"";
+ 
+  if (server.arg("info")== "true") {
+    response+= "\"ip\": \""+WiFi.localIP().toString()+"\"";
+    response+= ",\"gw\": \""+WiFi.gatewayIP().toString()+"\"";
+    response+= ",\"nm\": \""+WiFi.subnetMask().toString()+"\"";
+  }
+  if (server.arg("signalStrength")== "true") {
+    response+= ",\"signalStrengh\": \""+String(WiFi.RSSI())+"\"";
+  }
+  if (server.arg("chipInfo")== "true") {
+    response+= ",\"chipId\": \""+String(ESP.getChipId())+"\"";
+    response+= ",\"flashChipId\": \""+String(ESP.getFlashChipId())+"\"";
+    response+= ",\"flashChipSize\": \""+String(ESP.getFlashChipSize())+"\"";
+    response+= ",\"flashChipRealSize\": \""+String(ESP.getFlashChipRealSize())+"\"";
+  }
+  if (server.arg("freeHeap")== "true") {
+    response+= ",\"freeHeap\": \""+String(ESP.getFreeHeap())+"\"";
+  }
+  response+="}";
+ 
+  server.send(200, "text/json", response);
+}
+
 void SetUpOff () 
 {
   if (PassOK == 1 || PassOK == 2 || PassOK == 3) { if (PassOK == 1) {PassOK = 2;}; if(PassOK == 3) {PassOK = 1;} if(PassOK == 2) {PassOK = 3;}; RootPath(); 
@@ -456,19 +513,19 @@ if (PassOK == 1) { PassOK = 3; RootPath(); };
       
 }
 
-const char* indexKeyProcessor(const String& key)
+String indexKeyProcessor(const String& key)
 {
-  char cstr[16];
+  // char cstr[16];
 
   if (key == "CTime") return CTime;
-  else if (key == "S1") return std::to_string(S1).c_str();
-  else if (key == "S2") return S2;
-  else if (key == "Low1") return Low1;
-  else if (key == "Low2") return Low2;
-  else if (key == "In1ManualTime") return In1ManualTime;
-  else if (key == "In2ManualTime") return In2ManualTime;
-  else if (key == "In1Stat") return In2ManualTime;
-  else if (key == "In2Stat") return In2ManualTime;
+  else if (key == "S1") return String(S1);
+  else if (key == "S2") return String(S2);
+  else if (key == "Low1") return String(Low1);
+  else if (key == "Low2") return String(Low2);
+  else if (key == "In1ManualTime") return String(In1ManualTime);
+  else if (key == "In2ManualTime") return String(In2ManualTime);
+  else if (key == "In1Stat") return String(In2ManualTime);
+  else if (key == "In2Stat") return String(In2ManualTime);
   return "Key not found";
 }
 
@@ -479,7 +536,7 @@ void RootPath()
     // content = "";
     // server.send(200, "text/html", content);
     
-    templateProcessor.processAndSend("/index.html", indexKeyProcessor);
+    // templateProcessor.processAndSend("/index.html", indexKeyProcessor);
     
     Serial.println("Send Home Page");
   };
@@ -526,7 +583,7 @@ void RootPath()
   if (PassOK == 3) {
       content = "<!DOCTYPE HTML>\r\n<html><h3><a title='Clic thiz linc to go home page.' href='/\'>Setup 1 page.</a></h3>";
       content += CTime;
-      content += " "Version;
+      content += Version;
       content += "<table style='border-collapse: collapse;' 'width: 100%;' 'height: 50%; border=0'>";
       SensorSetUp();
       RelaySetUp();
